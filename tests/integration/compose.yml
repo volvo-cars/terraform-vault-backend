@@ -1,0 +1,72 @@
+services:
+  vault:
+    image: hashicorp/vault:1.16.2
+    command:
+      - "server"
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    environment:
+      - |
+        VAULT_LOCAL_CONFIG=
+          {
+            "cluster_addr": "http://127.0.0.1:8201",
+            "api_addr": "http://127.0.0.1:8200",
+            "storage": {
+              "raft": {
+                "path": "/vault/file",
+                "node_id": "NODEID1"
+              }
+            },
+            "listener": [{
+              "tcp": {
+                "address": "0.0.0.0:8200",
+                "tls_disable": true
+              }
+            }],
+            "default_lease_ttl": "168h",
+            "max_lease_ttl": "720h",
+            "ui": true,
+            "path": [{
+              "secret*": {
+                "capabilities": [ "create", "read", "update", "delete", "list", "patch" ]
+            }]
+          }
+      
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      # alternative to curl -f for alpine images
+      test: wget -q --spider http://vault:8200 || exit 1
+      retries: 10
+  backend:
+    build: 
+      context: ../..
+      args:
+        PYTHON: ${PYTHON:-3.11}
+    command: |
+      poetry run python -m src --chunk-size ${CHUNK_SIZE:--1} --vault-url http://vault:8200 --host 0.0.0.0 --port 8300 --verbose
+    ports:
+      - "8300:8300"
+    depends_on:
+      - vault
+    # https://stackoverflow.com/questions/76984020/understanding-docker-fastapi-startup-and-shutdown
+    stop_grace_period: 1s 
+    healthcheck:
+      test: wget -q --spider http://backend:8300 || exit 1
+      retries: 10
+  test:
+    command: 
+      - ${TEST_FILE?TEST_FILE not set!}
+      - ${SIZE:-small}
+    build: .
+    depends_on:
+      - vault
+      - backend
+    environment:
+      - VAULT_ADDR=http://vault:8200
+    healthcheck:
+      test: wget --spider http://backend:8300 && wget --spider http://vault:8200
+      retries: 10
+    
+      

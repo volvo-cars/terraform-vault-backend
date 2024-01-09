@@ -1,0 +1,78 @@
+[tool.poe.tasks]
+_integrationtest.cmd = "docker compose up --abort-on-container-exit --build --force-recreate -V"
+_integrationtest.env = { VAULT_ADDR = "127.0.0.1:8200"}
+
+# small tasks
+test_apply_destroy.ref = "_integrationtest"
+test_apply_destroy.env = { TEST_FILE = "apply-destroy" }
+
+test_apply_noapply_destroy.ref = "_integrationtest"
+test_apply_noapply_destroy.env = { TEST_FILE = "apply-noapply-destroy" }
+
+test_apply_apply_destroy.ref = "_integrationtest"
+test_apply_apply_destroy.env = { TEST_FILE = "apply-apply-destroy" }
+
+test_apply_corruptlock.ref = "_integrationtest"
+test_apply_corruptlock.env = { TEST_FILE = "apply-corruptlock" }
+
+# big tasks
+test_assert_chunked.ref = "_integrationtest"
+test_assert_chunked.env = { TEST_FILE = "assert-chunked", SIZE = "big" }
+
+test_apply_destroy_big.ref = "_integrationtest"
+test_apply_destroy_big.env = { TEST_FILE = "apply-destroy", SIZE = "big" }
+
+test_apply_noapply_destroy_big.ref = "_integrationtest"
+test_apply_noapply_destroy_big.env = { TEST_FILE = "apply-noapply-destroy", SIZE = "big" }
+
+test_apply_apply_destroy_big.ref = "_integrationtest"
+test_apply_apply_destroy_big.env = { TEST_FILE = "apply-apply-destroy", SIZE = "big" }
+
+test_apply_corruptlock_big.ref = "_integrationtest"
+test_apply_corruptlock_big.env = { TEST_FILE = "apply-corruptlock", SIZE = "big" }
+
+# big tasks with chunk_size set
+test_assert_chunked_sized.ref = "_integrationtest"
+test_assert_chunked_sized.env = { TEST_FILE = "assert-chunked", SIZE = "big", CHUNK_SIZE="1000000" }
+
+test_apply_destroy_big_sized.ref = "_integrationtest"
+test_apply_destroy_big_sized.env = { TEST_FILE = "apply-destroy", SIZE = "big", CHUNK_SIZE="1000000" }
+
+test_apply_noapply_destroy_big_sized.ref = "_integrationtest"
+test_apply_noapply_destroy_big_sized.env = { TEST_FILE = "apply-noapply-destroy", SIZE = "big", CHUNK_SIZE="1000000" }
+
+test_apply_apply_destroy_big_sized.ref = "_integrationtest"
+test_apply_apply_destroy_big_sized.env = { TEST_FILE = "apply-apply-destroy", SIZE = "big", CHUNK_SIZE="1000000" }
+
+test_apply_corruptlock_big_sized.ref = "_integrationtest"
+test_apply_corruptlock_big_sized.env = { TEST_FILE = "apply-corruptlock", SIZE = "big", CHUNK_SIZE="1000000" }
+
+
+_integrationtest_small = [
+  "test_apply_destroy",
+  "test_apply_noapply_destroy",
+  "test_apply_apply_destroy",
+  "test_apply_corruptlock"
+]
+
+_integrationtest_big = [
+  "test_assert_chunked",
+  "test_apply_destroy_big",
+  "test_apply_noapply_destroy_big",
+  "test_apply_apply_destroy_big",
+  "test_apply_corruptlock_big"
+]
+_integrationtest_big_sized = [
+  "test_assert_chunked_sized",
+  "test_apply_destroy_big_sized",
+  "test_apply_noapply_destroy_big_sized",
+  "test_apply_apply_destroy_big_sized",
+  "test_apply_corruptlock_big_sized"
+]
+
+integrationtest = [
+  "_integrationtest_small",
+  "_integrationtest_big",
+  "_integrationtest_big_sized"
+]
+
