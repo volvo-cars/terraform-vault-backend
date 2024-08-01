@@ -1,4 +1,5 @@
 """Test that attrs to Vault are being coerced correctly."""
+
 from typing import Any
 
 from src.__main__ import Vault
@@ -22,7 +23,7 @@ def test_url_coercion() -> None:
     """Test that non-http(s)-prefixed urls get coerced."""
     variants = ("10.0.0.1", "example.com", "www.example.com")
     for variant in variants:
-        coerced = f"http://{variant}"
+        coerced = f"https://{variant}"
         assert coerced_with(vault_url=variant).vault_url == coerced
 
 

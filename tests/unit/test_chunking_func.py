@@ -4,6 +4,7 @@ The main thing being asserted is their inverse relationship. It's less relevant
 to check for e.g. individual objects being packed correctly, since this assert would be
 highly volatile.
 """
+
 from typing import Any, cast
 
 from src.__main__ import pack_state, unpack_state

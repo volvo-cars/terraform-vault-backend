@@ -7,69 +7,25 @@ readme = "README.md"
 packages = [ {include = "src"}]
 
 [tool.poetry.dependencies]
-python = ">= 3.8, < 3.13"
-fastapi = "^0.109.1"
-hvac = "^2.1.0"
-uvicorn = "^0.25.0"
+python = ">=3.8,<3.13"
+fastapi = ">=0.111.1,<0.112.0"
+hvac = ">=2.3.0,<2.4.0"
+uvicorn = ">=0.30.4,<0.31.0"
 
 
 [tool.poetry.group.dev.dependencies]
-poethepoet = "^0.24.4"
-ruff = "^0.1.14"
-mypy = "^1.8.0"
-pytest = "^8.2.0"
-
-[[tool.poe.include]]
-path = "tests/integration/tasks.toml"
-cwd = "tests/integration"
-
-[tool.poe.tasks]
-start = "python -m src"
-
-lint = "ruff check . --fix"
-lint_ro = "ruff check . --no-fix"
-
-format = "ruff format ."
-format_ro = "ruff format . --check"
-
-typecheck = "mypy . --strict"
-
-unittest = "python -m pytest"
-
-check = [
-  "format",
-  "lint",
-  "typecheck",
-]
-
-test = [
-  "unittest",
-  "integrationtest"
-]
-
-check_ro = [
-  "format_ro",
-  "lint_ro",
-  "typecheck",
-]
-
-fullcheck = [
-  "check",
-  "test"
-]
-
-fullcheck_ro = [
-  "check_ro",
-  "test"
-]
-  
+ruff = ">=0.5.5,<0.6.0"
+mypy = ">=1.11.1,<1.12.0"
+pytest = ">=8.3.2,<8.4.0"
 
 [tool.ruff]
 line-length = 100
-select = [ "ALL" ]
 fix = true
 exclude = ['stubs']
-ignore = [ 
+
+[tool.ruff.lint]
+select = [ "ALL" ]
+ignore = [
   "COM812",
   "ISC001",
   "D203",

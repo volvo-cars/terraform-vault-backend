@@ -1,4 +1,5 @@
 """Implementation of a Vault backend for Terraform."""
+
 from __future__ import annotations
 
 import argparse
@@ -184,7 +185,7 @@ class Vault:
     @coercer
     @staticmethod
     def _vault_url_coercer(vault_url: str) -> str:
-        return vault_url if vault_url.startswith("http") else f"http://{vault_url}"
+        return vault_url if vault_url.startswith("http") else f"https://{vault_url}"
 
     @coercer
     @staticmethod
@@ -435,11 +436,6 @@ def start() -> None:
         default="secret/",
     )
     parser.add_argument(
-        "--secrets-path",
-        help="Where to store state and lock in the secrets store. Defaults to 'tf-backend/'",
-        default="tf-backend/",
-    )
-    parser.add_argument(
         "--host", help="The host address to bind to. Defaults to '127.0.0.1'.", default="127.0.0.1"
     )
     parser.add_argument(
@@ -469,27 +465,28 @@ def start() -> None:
     loglevels = (logging.WARNING, logging.INFO, logging.DEBUG)
     logging.basicConfig(level=loglevels[args.verbose])
 
-    vault = Vault.from_coerced_attrs(
-        vault_url=args.vault_url,
-        mount_point=args.mount_point,
-        secrets_path=args.secrets_path,
-        chunk_size=args.chunk_size,
-    )
-
-    app.state.vault = vault
+    app.state.vault_url = args.vault_url
+    app.state.mount_point = args.mount_point
+    app.state.chunk_size = args.chunk_size
 
     uvicorn.run(app, host=args.host, port=args.port)
 
 
 def get_vault(request: Request) -> Vault:
     """Return vault instance for use as a FastAPI dependency."""
-    return cast(Vault, request.app.state.vault)
+    vault = Vault.from_coerced_attrs(
+        vault_url=request.app.state.vault_url,
+        mount_point=request.app.state.mount_point,
+        chunk_size=request.app.state.chunk_size,
+        secrets_path=request.path_params["secrets_path"],
+    )
+    return vault
 
 
-security = HTTPBasic()
+SecurityDep = Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]
 
 
-def get_vault_token(credentials: Annotated[HTTPBasicCredentials, Depends(security)]) -> str:
+def get_vault_token(credentials: SecurityDep) -> str:
     """Return vault token from HTTP Basic auth for use as a FastAPI dependency."""
     token: str = credentials.password
     prefix = "hvs."
@@ -507,18 +504,18 @@ TokenDep = Annotated[str, Depends(get_vault_token)]
 # https://github.com/tiangolo/fastapi/issues/1773
 @app.head("/")
 @app.get("/")
-def read_root_head() -> Response:
+async def read_root_head() -> Response:
     """Support HTTP GET and HEAD for /."""
     return Response()
 
 
-@app.get("/state")
+@app.get("/state/{secrets_path:path}")
 async def get_state(vault: VaultDep, token: TokenDep) -> StateData:
     """Get the Vault state."""
     return vault.get_state(token=token)
 
 
-@app.post("/state")
+@app.post("/state/{secrets_path:path}")
 async def update_state(request: Request, vault: VaultDep, token: TokenDep) -> None:
     """Update the Vault state."""
     try:
@@ -530,20 +527,20 @@ async def update_state(request: Request, vault: VaultDep, token: TokenDep) -> No
     vault.set_state(token=token, value=data)
 
 
-@app.get("/lock")
+@app.get("/lock/{secrets_path:path}")
 async def get_lock_info(vault: VaultDep, token: TokenDep) -> LockData:
     """Get lock info."""
     return vault.get_lock_data(token=token)
 
 
-@app.post("/lock")
+@app.post("/lock/{secrets_path:path}")
 async def acquire_lock(request: Request, vault: VaultDep, token: TokenDep) -> None:
     """Acquire the lock for Terraform state."""
     data = await request.json()
     return vault.acquire_lock(token=token, lock_data=data)
 
 
-@app.delete("/lock")
+@app.delete("/lock/{secrets_path:path}")
 async def release_lock(vault: VaultDep, token: TokenDep) -> None:
     """Acquire the lock for Terraform state."""
     return vault.release_lock(token=token)

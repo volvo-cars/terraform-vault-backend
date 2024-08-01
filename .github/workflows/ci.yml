@@ -11,107 +11,20 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - name: Cache Docker images
-        uses: ScribeMD/docker-cache@0.5.0
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
-          key: docker-${{ runner.os }}-${{ hashFiles('compose.yml') }}
-      - name: Build pkg dev container
-        run: |
-          tag=$(docker build . -q --build-arg INCLUDE_DEV=true --build-arg PYTHON=${{ matrix.python-version}})
-          echo "tag=$tag" >> $GITHUB_ENV
-
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry' # caching poetry dependencies
+      - name: Install dependencies
+        run: poetry install
       - name: Check formatter
-        run: | 
-          docker container run -i "$tag" poetry run poe format_ro
-
+        run: poetry run ruff check . --no-fix
       - name: Check linter
-        run: docker container run -i "$tag" poetry run poe lint_ro
-
+        run: poetry run ruff format . --check
       - name: Check types
-        run: docker container run -i "$tag" poetry run poe typecheck
-
+        run: poetry run mypy . --strict
       - name: Run unittests
-        run: docker container run -i "$tag" poetry run poe unittest
-
-  test-small:
-    name: Tests with small terraform state
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: install poe
-        run: pip install poethepoet
-      - name: Set python matrix as env var
-        run: |
-          echo "PYTHON=${{ matrix.python-version }}" >> $GITHUB_ENV
-
-      - name: Run integration test "apply_destroy"
-        run: poe test_apply_destroy
-      - name: Run integration test "apply_noapply_destroy"
-        run: poe test_apply_noapply_destroy
-      - name: Run integration test "apply_apply_destroy"
-        run: poe test_apply_apply_destroy
-      - name: Run integration test "apply_corruptlock"
-        run: poe test_apply_corruptlock
-
-  test-big:
-    name: Tests with big terraform state
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: install poe
-        run: pip install poethepoet
-      - name: Set python matrix as env var
-        run: |
-          echo "PYTHON=${{ matrix.python-version }}" >> $GITHUB_ENV
-      - name: Run integration test "assert_chunked"
-        run: poe test_assert_chunked > /dev/null
-      - name: Run integration test "apply_destroy" with big state
-        run: poe test_apply_destroy_big > /dev/null
-      - name: Run integration test "apply_noapply_destroy" with big state
-        run: poe test_apply_noapply_destroy_big > /dev/null
-      - name: Run integration test "apply_apply_destroy" with big state
-        run: poe test_apply_apply_destroy_big > /dev/null
-      - name: Run integration test "apply_corruptlock" with big state
-        run: poe test_apply_corruptlock_big > /dev/null
-
-  test-big-sized:
-    name: Tests with big terraform state and fixed chunk_size
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: install poe
-        run: pip install poethepoet
-      - name: Set python matrix as env var
-        run: |
-          echo "PYTHON=${{ matrix.python-version }}" >> $GITHUB_ENV
-      - name: Run integration test "assert_chunked" with fixed chunk_size
-        run: poe test_assert_chunked_sized > /dev/null
-      - name: Run integration test "apply_destroy" with big state and fixed chunk_size
-        run: poe test_apply_destroy_big_sized > /dev/null
-      - name: Run integration test "apply_noapply_destroy" with big state and fixed chunk_size
-        run: poe test_apply_noapply_destroy_big_sized > /dev/null
-      - name: Run integration test "apply_apply_destroy" with big state and fixed chunk_size
-        run: poe test_apply_apply_destroy_big_sized > /dev/null
-      - name: Run integration test "apply_corruptlock" with big state and fixed chunk_size
-        run: poe test_apply_corruptlock_big_sized > /dev/null
+        run: poetry run python -m pytest

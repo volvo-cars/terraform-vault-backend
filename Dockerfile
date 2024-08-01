@@ -1,25 +1,30 @@
 ARG PYTHON=3.11
-FROM python:${PYTHON}-alpine3.19
+FROM amd64/python:${PYTHON}-alpine3.19 as builder
 
-ARG INCLUDE_DEV=false
+RUN pip install --no-cache poetry 
 
-RUN apk add --no-cache --virtual .pynacl_deps build-base python3-dev libffi-dev
-
-RUN pip install poetry  
-
-RUN mkdir -p /app  
-COPY . /app
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_VIRTUALENVS_OPTIONS_NO_PIP=1 \
+    POETRY_VIRTUALENVS_OPTIONS_NO_SETUPTOOLS=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
 WORKDIR /app
 
-EXPOSE 8000
+COPY pyproject.toml poetry.lock ./
 
+RUN poetry install --only=main --no-root && \
+    rm -rf $POETRY_CACHE_DIR
 
-# Example usage of the boolean argument
-RUN if [ "$INCLUDE_DEV" = "true" ] ; then \
-      poetry install; \
-  else \
-      poetry install --without dev; \
-  fi
+FROM amd64/python:${PYTHON}-alpine3.19
 
-CMD ["poetry", "run", "python", "-m", "src"]
+EXPOSE 8300
+
+ENV VIRTUAL_ENV=/app/.venv \
+     PATH="/app/.venv/bin:$PATH"
+
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY src/*.py ./src/
+
+CMD ["python", "-m", "src", "--host", "0.0.0.0"]
