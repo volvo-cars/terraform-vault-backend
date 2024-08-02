@@ -1,0 +1,11 @@
+services:
+  backend:
+    build:
+      context: ..
+    command: ["python", "-m", "src", "--host", "0.0.0.0", "--vault-url", "http://vault:8200"]
+    ports:
+      - "8300:8300"
+  vault:
+    image: "hashicorp/vault"
+    ports:
+      - "8200:8200"

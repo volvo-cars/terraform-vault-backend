@@ -488,13 +488,7 @@ SecurityDep = Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]
 
 def get_vault_token(credentials: SecurityDep) -> str:
     """Return vault token from HTTP Basic auth for use as a FastAPI dependency."""
-    token: str = credentials.password
-    prefix = "hvs."
-    if not token.startswith(prefix):
-        msg = f"Vault token seems malformed; doesn't start with '{prefix}'!"
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
-    logging.info("Got vault token hvs.(...)%s", token[len(token) - 3 :])
-    return token
+    return credentials.password
 
 
 VaultDep = Annotated[Vault, Depends(get_vault)]

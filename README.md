@@ -59,7 +59,7 @@ To authenticate to the Vault backend, you need to send your `VAULT_TOKEN` with y
 Terraform invocations. How do we do this? By passing it through HTTP Basic Auth:
 
 ```shell
-$ export TF_HTTP_PASSWORD="${VAULT_TOKEN:?"
+$ export TF_HTTP_PASSWORD="${VAULT_TOKEN:?}"
 $ terraform apply
 ...
 ```
