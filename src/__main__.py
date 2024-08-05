@@ -32,6 +32,28 @@ StateData = Any
 
 STATE_ENCODING = "utf-8"
 GZIP_COMPRESSLEVEL = 9
+FORMAT_VERSION = "v0"
+SERIALIZED_STATE_PIECES = 2  # number of distinct pieces to a serialized state: version + payload
+
+
+class StateFormatError(ValueError):
+    """Error indicating that the given serialized state could not be parsed."""
+
+
+class MissingFormatVersionError(StateFormatError):
+    """Error indicating that the given serialized state has no format version specifier."""
+
+    def __init__(self, *args: object) -> None:
+        super().__init__("version format prefix is missing", *args)
+
+
+class UnsupportedFormatVersionError(StateFormatError):
+    """Error indicating that the given serialized state is of an unsupported version."""
+
+    def __init__(self, actual_version: str, *args: str) -> None:
+        self.actual_version = actual_version
+        msg = f"unsupported state format version: {actual_version}"
+        super().__init__(msg, *args)
 
 
 def strtuple(xs: Iterable[Any]) -> str:
@@ -60,19 +82,26 @@ def pack_state(o: Any) -> str:
     gzip_bytes = gzip.compress(json_bytes, compresslevel=GZIP_COMPRESSLEVEL, mtime=0)
     b64bytes = base64.b64encode(gzip_bytes)
     b64 = b64bytes.decode(STATE_ENCODING)
-    return b64
+    return f"{FORMAT_VERSION}:{b64}"
 
 
-def unpack_state(b64: str) -> Any:
-    """Turn a compressed base64-string into a Python object.
+def unpack_state(state: str) -> Any:
+    """Turn a compressed, version-prefixed Terraform state into a Python object.
 
     This function is the inverse of pack_state.
 
     Args:
     ----
-        b64: The compressed base64-string.
+        state: The compressed and versioned state.
 
     """
+    version_and_payload = state.split(":", 1)
+    if len(version_and_payload) != SERIALIZED_STATE_PIECES:
+        raise MissingFormatVersionError
+    version, b64 = version_and_payload
+    if version != FORMAT_VERSION:
+        raise UnsupportedFormatVersionError(version)
+
     b64bytes = b64.encode(STATE_ENCODING)
     gzip_bytes = base64.b64decode(b64bytes)
     json_bytes = gzip.decompress(gzip_bytes)
