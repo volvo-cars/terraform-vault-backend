@@ -7,9 +7,9 @@ terraform {
   }
 
   backend "http" {
-    address = "http://0.0.0.0:8300/state/terraform" 
-    lock_address = "http://0.0.0.0:8300/lock/terraform"
-    unlock_address = "http://0.0.0.0:8300/lock/terraform"
+    address = "http://127.0.0.1:8300/state/terraform"
+    lock_address = "http://127.0.0.1:8300/lock/terraform"
+    unlock_address = "http://127.0.0.1:8300/lock/terraform"
     lock_method = "POST"
     unlock_method = "DELETE"
   }
