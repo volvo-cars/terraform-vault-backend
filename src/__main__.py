@@ -488,7 +488,7 @@ SecurityDep = Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]
 
 def get_vault_token(credentials: SecurityDep) -> str:
     """Return vault token from HTTP Basic auth for use as a FastAPI dependency."""
-    return credentials.password
+    return credentials.username
 
 
 VaultDep = Annotated[Vault, Depends(get_vault)]

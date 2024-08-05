@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "terraform-vault-backend"
-version = "0.1.0"
+version = "0.2.0"
 description = "A Vault backend for Terraform implemented as an HTTP server."
 authors = ["emanueljg <emanueljohnsongodin@gmail.com>"]
 readme = "README.md"

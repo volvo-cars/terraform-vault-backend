@@ -12,7 +12,6 @@ terraform {
     unlock_address = "http://0.0.0.0:8300/lock/terraform"
     lock_method = "POST"
     unlock_method = "DELETE"
-    username = "*" # unused but must be defined
   }
 }
 
