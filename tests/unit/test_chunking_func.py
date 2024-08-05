@@ -5,10 +5,10 @@ to check for e.g. individual objects being packed correctly, since this assert w
 highly volatile.
 """
 
+import base64
 from typing import Any, cast
 
 import pytest
-import base64
 
 from src.__main__ import (
     FORMAT_VERSION,
@@ -63,14 +63,14 @@ def test_serialize_version_prefix() -> None:
 
 def test_deserialize_missing_version_prefix() -> None:
     """Test that deserialization fails on missing version prefix."""
-    o = base64.b64encode(b"{'foo': 'bar'}").decode('utf-8')
+    o = base64.b64encode(b"{'foo': 'bar'}").decode("utf-8")
     with pytest.raises(MissingFormatVersionError):
         unpack_state(o)
 
 
 def test_deserialize_unsupported_version() -> None:
     """Test that deserialization fails on unsupported version."""
-    payload = base64.b64encode(b"{'foo': 'bar'}").decode('utf-8')
+    payload = base64.b64encode(b"{'foo': 'bar'}").decode("utf-8")
     o = f"v1000000:{payload}"
     with pytest.raises(UnsupportedFormatVersionError):
         unpack_state(o)
