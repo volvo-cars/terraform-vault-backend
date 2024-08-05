@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import base64
-import gzip
 import json
 import logging
 import os
@@ -15,6 +14,7 @@ import hvac  # type: ignore
 import hvac.exceptions  # type: ignore
 import requests.exceptions  # type: ignore
 import uvicorn
+import zstandard
 from fastapi import (
     Depends,
     FastAPI,
@@ -31,8 +31,8 @@ StateData = Any
 
 
 STATE_ENCODING = "utf-8"
-GZIP_COMPRESSLEVEL = 9
-FORMAT_VERSION = "v0"
+ZSTD_COMPRESSLEVEL = 9
+FORMAT_VERSION = "v1"
 SERIALIZED_STATE_PIECES = 2  # number of distinct pieces to a serialized state: version + payload
 
 
@@ -79,8 +79,8 @@ def pack_state(o: Any) -> str:
     """
     json_str = json.dumps(o)
     json_bytes = json_str.encode(STATE_ENCODING)
-    gzip_bytes = gzip.compress(json_bytes, compresslevel=GZIP_COMPRESSLEVEL, mtime=0)
-    b64bytes = base64.b64encode(gzip_bytes)
+    zstd_bytes = zstandard.compress(json_bytes, level=ZSTD_COMPRESSLEVEL)
+    b64bytes = base64.b64encode(zstd_bytes)
     b64 = b64bytes.decode(STATE_ENCODING)
     return f"{FORMAT_VERSION}:{b64}"
 
@@ -103,8 +103,8 @@ def unpack_state(state: str) -> Any:
         raise UnsupportedFormatVersionError(version)
 
     b64bytes = b64.encode(STATE_ENCODING)
-    gzip_bytes = base64.b64decode(b64bytes)
-    json_bytes = gzip.decompress(gzip_bytes)
+    zstd_bytes = base64.b64decode(b64bytes)
+    json_bytes = zstandard.decompress(zstd_bytes)
     json_str = json_bytes.decode(STATE_ENCODING)
     o = json.loads(json_str)
     return o
