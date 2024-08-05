@@ -97,7 +97,7 @@ def unpack_state(state: str) -> Any:
     """
     version_and_payload = state.split(":", 1)
     if len(version_and_payload) != SERIALIZED_STATE_PIECES:
-        raise MissingFormatVersionError()
+        raise MissingFormatVersionError
     version, b64 = version_and_payload
     if version != FORMAT_VERSION:
         raise UnsupportedFormatVersionError(version)
