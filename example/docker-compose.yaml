@@ -4,8 +4,8 @@ services:
       context: ..
     command: ["python", "-m", "src", "--host", "0.0.0.0", "--vault-url", "http://vault:8200"]
     ports:
-      - "8300:8300"
+      - "127.0.0.1:8300:8300"
   vault:
     image: "hashicorp/vault"
     ports:
-      - "8200:8200"
+      - "127.0.0.1:8200:8200"
