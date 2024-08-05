@@ -6,9 +6,16 @@ highly volatile.
 """
 
 from typing import Any, cast
-from pytest import raises
 
-from src.__main__ import pack_state, unpack_state, FORMAT_VERSION
+import pytest
+
+from src.__main__ import (
+    FORMAT_VERSION,
+    MissingFormatVersionError,
+    UnsupportedFormatVersionError,
+    pack_state,
+    unpack_state,
+)
 
 
 def chunking_is_inverse(o: Any) -> bool:
@@ -56,12 +63,12 @@ def test_serialize_version_prefix() -> None:
 def test_deserialize_missing_version_prefix() -> None:
     """Test that deserialization fails on missing version prefix."""
     o = "{'foo': 'bar'}"
-    with raises(ValueError):
+    with pytest.raises(MissingFormatVersionError):
         unpack_state(o)
 
 
 def test_deserialize_unsupported_version() -> None:
     """Test that deserialization fails on unsupported version."""
     o = "v1000000:{'foo': 'bar'}"
-    with raises(ValueError):
+    with pytest.raises(UnsupportedFormatVersionError):
         unpack_state(o)
