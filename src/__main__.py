@@ -32,6 +32,7 @@ StateData = Any
 
 STATE_ENCODING = "utf-8"
 GZIP_COMPRESSLEVEL = 9
+FORMAT_VERSION = "v0"
 
 
 def strtuple(xs: Iterable[Any]) -> str:
@@ -60,10 +61,10 @@ def pack_state(o: Any) -> str:
     gzip_bytes = gzip.compress(json_bytes, compresslevel=GZIP_COMPRESSLEVEL, mtime=0)
     b64bytes = base64.b64encode(gzip_bytes)
     b64 = b64bytes.decode(STATE_ENCODING)
-    return b64
+    return f"{FORMAT_VERSION}:{b64}"
 
 
-def unpack_state(b64: str) -> Any:
+def unpack_state(state: str) -> Any:
     """Turn a compressed base64-string into a Python object.
 
     This function is the inverse of pack_state.
@@ -73,6 +74,13 @@ def unpack_state(b64: str) -> Any:
         b64: The compressed base64-string.
 
     """
+    version_and_payload = state.split(":", 1)
+    if len(version_and_payload) != 2:
+        raise ValueError("state does not have a version prefix")
+    version, b64 = version_and_payload
+    if version != FORMAT_VERSION:
+        raise ValueError(f"unsupported state format version: {version}")
+
     b64bytes = b64.encode(STATE_ENCODING)
     gzip_bytes = base64.b64decode(b64bytes)
     json_bytes = gzip.decompress(gzip_bytes)
