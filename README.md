@@ -40,7 +40,6 @@ terraform {
     unlock_address = "https://example.com/lock/<path>"
     lock_method = "POST"
     unlock_method = "DELETE"
-    username = "*" # unused but must be defined
   }
 }
 ```
@@ -59,9 +58,8 @@ To authenticate to the Vault backend, you need to send your `VAULT_TOKEN` with y
 Terraform invocations. How do we do this? By passing it through HTTP Basic Auth:
 
 ```shell
-$ export TF_HTTP_PASSWORD="${VAULT_TOKEN:?"
+$ export TF_HTTP_USERNAME="${VAULT_TOKEN:?}"
 $ terraform apply
-...
 ```
 
 More info on Vault authentication can be found at [Vault's official documentation](https://developer.hashicorp.com/vault/tutorials/getting-started/getting-started-authentication).
