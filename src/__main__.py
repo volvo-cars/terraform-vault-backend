@@ -23,6 +23,7 @@ from fastapi import (
     Response,
     status,
 )
+from fastapi.datastructures import State
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from typing_extensions import Annotated, Concatenate, ParamSpec
 
@@ -501,12 +502,20 @@ def start() -> None:
     uvicorn.run(app, host=args.host, port=args.port)
 
 
-def get_vault(request: Request, secrets_path: str) -> Vault:
+def get_app_state(request: Request) -> State:
+    """Depend explicitly on app state only, without access to the request."""
+    return cast(FastAPI, request.app).state
+
+
+AppStateDep = Annotated[State, Depends(get_app_state)]
+
+
+def get_vault(state: AppStateDep, secrets_path: str) -> Vault:
     """Return vault instance for use as a FastAPI dependency."""
     vault = Vault.from_coerced_attrs(
-        vault_url=request.app.state.vault_url,
-        mount_point=request.app.state.mount_point,
-        chunk_size=request.app.state.chunk_size,
+        vault_url=state.vault_url,
+        mount_point=state.mount_point,
+        chunk_size=state.chunk_size,
         secrets_path=secrets_path,
     )
     return vault
