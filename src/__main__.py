@@ -501,13 +501,13 @@ def start() -> None:
     uvicorn.run(app, host=args.host, port=args.port)
 
 
-def get_vault(request: Request) -> Vault:
+def get_vault(request: Request, secrets_path: str) -> Vault:
     """Return vault instance for use as a FastAPI dependency."""
     vault = Vault.from_coerced_attrs(
         vault_url=request.app.state.vault_url,
         mount_point=request.app.state.mount_point,
         chunk_size=request.app.state.chunk_size,
-        secrets_path=request.path_params["secrets_path"],
+        secrets_path=secrets_path,
     )
     return vault
 
