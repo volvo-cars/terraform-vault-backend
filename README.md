@@ -35,9 +35,9 @@ hosted at `https://example.com`:
 ```hcl
 terraform {
   backend "http" {
-    address = "https://example.com/state/<path>" 
-    lock_address = "https://example.com/lock/<path>"
-    unlock_address = "https://example.com/lock/<path>"
+    address = "https://example.com/v1/state/<path>" 
+    lock_address = "https://example.com/v1/lock/<path>"
+    unlock_address = "https://example.com/v1/lock/<path>"
     lock_method = "POST"
     unlock_method = "DELETE"
   }

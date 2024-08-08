@@ -537,17 +537,24 @@ TokenDep = Annotated[str, Depends(get_vault_token)]
 @app.head("/")
 @app.get("/")
 async def read_root_head() -> Response:
-    """Support HTTP GET and HEAD for /."""
+    """General health check API."""
     return Response()
 
 
-@app.get("/state/{secrets_path:path}")
+@app.head("/v1")
+@app.get("/v1")
+async def read_v1_head() -> Response:
+    """V1 health check API."""
+    return Response()
+
+
+@app.get("/v1/state/{secrets_path:path}")
 async def get_state(vault: VaultDep, token: TokenDep) -> StateData:
     """Get the Vault state."""
     return vault.get_state(token=token)
 
 
-@app.post("/state/{secrets_path:path}")
+@app.post("/v1/state/{secrets_path:path}")
 async def update_state(request: Request, vault: VaultDep, token: TokenDep) -> None:
     """Update the Vault state."""
     try:
@@ -559,22 +566,22 @@ async def update_state(request: Request, vault: VaultDep, token: TokenDep) -> No
     vault.set_state(token=token, value=data)
 
 
-@app.get("/lock/{secrets_path:path}")
+@app.get("/v1/lock/{secrets_path:path}")
 async def get_lock_info(vault: VaultDep, token: TokenDep) -> LockData:
     """Get lock info."""
     return vault.get_lock_data(token=token)
 
 
-@app.post("/lock/{secrets_path:path}")
+@app.post("/v1/lock/{secrets_path:path}")
 async def acquire_lock(request: Request, vault: VaultDep, token: TokenDep) -> None:
     """Acquire the lock for Terraform state."""
     data = await request.json()
     return vault.acquire_lock(token=token, lock_data=data)
 
 
-@app.delete("/lock/{secrets_path:path}")
+@app.delete("/v1/lock/{secrets_path:path}")
 async def release_lock(vault: VaultDep, token: TokenDep) -> None:
-    """Acquire the lock for Terraform state."""
+    """Release the lock for Terraform state."""
     return vault.release_lock(token=token)
 
 
