@@ -2,12 +2,13 @@
 
 ## Attacker personas
 
-| Capabilities | Acronym |
-|--------------|---------|
-| Unauthenticated Internet attacker | UIA |
-| Malicious user | MUA |
-| Compromised TVB | CTA |
-| Compromised Vault | CVA |
+| Capabilities | Acronym | Exposure |
+|--------------|---------|----------|
+| Unauthenticated Internet attacker | UIA | High |
+| Compromised Network attacker | CNA | Medium |
+| Malicious user | MUA | Medium |
+| Compromised TVB | CTA | Low |
+| Compromised Vault | CVA | Low |
 
 
 ## Assumptions
@@ -22,46 +23,77 @@
 ### UC1: Get State
 A Terraform client calls the Terraform Vault Backend to obtain previously stored TF state.
 
-| Use case | Attacker | What | Impact | Exposure | Severity | Countermeasures |
-|----------|----------|------|--------|----------|----------|-----------------|
-| UC1:1 | UIA | Impersonate service to obtain Vault API keys | High | Low | High | Protect traffic with TLS + proper certificates |
-| UC1:1 | UIA | DoS server with garbage traffic | Low | Medium | Low | Deploy service on internal network or behind DoS protection |
-| UC1:1 | UIA | Exhaust server resources using clever tricks like slow loris | Low | High | Medium | See above; or deploy service behind mitigating reverse proxy like nginx |
-| UC1:1 | UIA | Eavesdrop on traffic to obtain Vault API keys | High | Low | High | Protect traffic with TLS |
-| UC1:1 | MUA | Impersonate another user to obtain secrets from TF state | High | Low | High | Do not share Vault API keys between users/teams/projects |
-| UC1:1 | CTA | Obtain and leak Vault API keys | High | Low | High | Filter outbound network traffic to avoid exfiltration; deploy IDS to increase chance of detection; ensure dependencies are minimal, trustworthy, and up to date |
-| UC1:2 | UIA | Impersonate Vault to obtain Vault API keys | High | Low | High | Protect traffic with TLS + proper certificates |
-| UC1:2 | MUA | Impersonate Vault user to obtain Vault secrets | High | High | High | Require individual authentication for Vault access |
-| UC1:2 | UIA | DoS Vault with garbage traffic | Low | High | Low | Deploy Vault on internal network or behind DoS protection |
-| UC1:2 | UIA | Exhaust Vault resources using clever tricks like slow loris | Low | High | Low | Deploy Vault behind mitigating proxy or on separate network |
-| UC1:2 | CVA | Obtain and leak Vault API keys | High | Low | High | Filter outbound network traffic to avoid exfiltration; deploy IDS to increase chance of detection; ensure Vault is kept up to date |
-| UC1:3 | UIA | Return malicious state to user which steals data from deployment if deployed | High | Low | High | Protect traffic with TLS |
-| UC1:3 | UIA | Eavesdrop on returned TF state to obtain secrets | High | Low | High | Protect traffic with TLS |
-| UC1:3 | CTA | Leak secrets obtained from Vault | High | Low | High | Filter outbound traffic to prevent exfiltration; ensure dependencies are minimal, trustworthy, and up to date |
-| UC1:3 | CVA | Return malicious state to user which DoSes deployment if deployed | Medium | Low | Low | Deploy IDS to increase chance of detection; implement gradual rollout and rollback strategy |
-| UC1:3 | CVA | Return malicious state to user which steals data from deployment if deployed | High | Low | High | Deploy IDS to increase chance of detection; ensure Vault is kept up to date |
-| UC1:4 | UIA | Impersonate user to obtain secrets from TF state | High | High | High | Authenticate using Vault API key |
-| UC1:4 | UIA | Return malicious state to user which steals data from deployment if deployed | High | Low | Low | Protect traffic with TLS |
-| UC1:4 | UIA | Eavesdrop on TF state as it is sent to user to obtain secrets | High | Low | Medium | Protect traffic with TLS |
-| UC1:1 | MUA | Impersonate another user | Low | Medium | Low | Log accesses with identity |
-| UC1:4 | MUA | Leak secrets to unauthorized third parties | High | Low | High | Ensure all get requests are logged; do not share Vault API keys |
-| UC1:4 | CTA | Return malicious state to user which DoSes deployment if deployed | Medium | Low | Low | Deploy IDS to increase chance of detection; implement gradual rollout and rollback strategy |
-| UC1:4 | CTA | Return malicious state to user which steals data from deployment if deployed | High | Low | High | Deploy IDS to increase chance of detection; ensure dependencies are minimal, trustworthy, and up to date |
+```mermaid
+sequenceDiagram
+  participant TF client
+  participant TVB
+  participant Vault
+
+  TF client->>TVB: 1: GET /state/$PATH <Vault API key>
+  TVB->>Vault: 2: GET <Vault API key>
+  Vault->>TVB: 3: GET response <state>
+  TVB->>TF client: 4: GET response <state>
+```
+
+| Use case | Attacker | What | Impact | Exposure | Severity | Countermeasures | Verification |
+|----------|----------|------|--------|----------|----------|-----------------|--------------|
+| UC1:1 | UIA | DoS server with garbage traffic | Low | High | Medium | Ensure service has sufficient resources to withstand lone attackers | Load test deployment
+|||||| Low | Deploy service on internal network or behind DoS protection | Check that deployed IPs belong to known good range
+| UC1:1 | UIA | Exhaust server resources using clever tricks like slow loris | Low | High | Medium | Deploy service behind mitigating reverse proxy (nginx, caddy, etc.) | Test that slow lorising deployment fails
+|||||| Low | Deploy service on internal network or behind DoS protection | Check that deployed IPs belong to known good range
+| UC1:1 | CNA | Impersonate Vault/TVB to obtain Vault API keys | High | Medium | High | Protect traffic with TLS + proper certificates | Test that TVB deployment rejects plain HTTP and uses a non-self signed cert
+| UC1:1 | CNA | Eavesdrop on traffic to obtain Vault API keys | High | Medium | High | Enforce TLS on TVB side | Test that TVB deployment rejects plain HTTP
+| UC1:1 | UIA, MUA | Impersonate user to obtain secrets from TF state | High | High | High | Use individual Vault API keys | Audit logs for signs of shared keys
+|||||| Low | Log accesses with identity and IP | Test that identity and IP is written to log for each request
+| UC1:1 | CTA | Obtain and leak Vault API keys | High | Low | High | Ensure dependencies are minimal, trustworthy, and up to date | Use automatic dependency scanning in CI
+|||||| Medium | Deploy IDS to increase chance of detection | Test deployment for IDS presence
+| UC1:3 | CVA, CNA | Return malicious state to user which steals data from deployment if deployed | High | Medium | High | Protect traffic with TLS + proper certificates | Test that TVB refuses to talk to HTTP or self-signed Vault
+| UC1:3 | CNA | Eavesdrop on returned TF state to obtain secrets | High | Medium | High | Protect traffic with TLS | See above
+| UC1:3 | CTA | Leak secrets obtained from Vault | High | Low | High | Ensure dependencies are minimal, trustworthy, and up to date | Use automatic dependency scanning in CI
+| UC1:3 | CVA | Return malicious state to user which steals data from deployment if deployed | High | Low | High | Deploy IDS to increase chance of detecting a Vault compromise | Test deployment for IDS presence
+| UC1:4 | CNA | Eavesdrop on TF state as it is sent to user to obtain secrets | High | Medium | Medium | Protect traffic with TLS | Test that TVB deployment rejects plain HTTP
+| UC1:4 | MUA | Leak secrets to unauthorized third parties | High | Medium | High | Log accesses with identity and IP | Test that identity and IP is written to log for each request
+| UC1:4 | CTA | Return malicious state to user which steals data from deployment if deployed | High | Low | High | Ensure dependencies are minimal, trustworthy, and up to date | Use automatic dependency scanning in CI
+|||||| Medium | Deploy IDS to increase chance of detection | Test deployment for IDS presence
+|||||| Low | Implement gradual rollout and rollback strategy in the service defined by the stored state | Test deploying service with broken state; alerts should fire immediately
 
 
 ## UC2: Safely Update State
 A Terraform client locks a particular state, updates it, and then unlocks it.
 
-| Use case | Attacker | What | Impact | Exposure | Severity | Countermeasures |
-|----------|----------|------|--------|----------|----------|-----------------|
-| UC2:1 | MUA | Lock state without intention to ever unlock it. | Low | Medium | Low | Don't share Vault API keys; automatically unlock resources after a set timeout |
-| UC2:1 | MUA | Exhaust Vault disk space by writing huge lock data | Low | Medium | Low | Restrict maximum lock data size |
-| UC2:2 | CTA | Exhaust Vault disk space by writing huge lock data | Low | Medium | Low | Restrict maximum lock data size; ensure dependencies are minimal, trustworthy, and up to date |
-| UC2:5 | UIA | Eavesdrop on traffic to obtain secrets from state | High | Low | High | Use TLS to protect traffic |
-| UC2:5 | MUA | Exhaust Vault disk space by writing huge state | Low | Medium | Low | Restrict maximum state size |
-| UC2:5 | MUA | Write malicious state to Vault to steal secrets if deployed | High | Medium | High | Log accesses with identity |
-| UC2:5 | LNA | Leak secrets obtained from state | High | Low | High | Filter outbound traffic |
-| UC2:6 | CTA | Write malicious state to Vault to steal secrets if deployed | High | Low | High | Deploy IDS to increase chance of detection; ensure dependencies are minimal, trustworthy, and up to date |
-| UC2:6 | CTA | Exhaust disk space by writing huge state | Low | Low | High | Restrict maximum state size; ensure dependencies are minimal, trustworthy, and up to date |
-| UC2:6 | UIA | Eavesdrop on traffic to obtain secrets from state | High | Low | High | Use TLS to protect traffic |
-| UC2:6 | CVA | Leak secrets obtained from state | High | Low | High | Filter outbound traffic; ensure Vault is kept up to date |
+```mermaid
+sequenceDiagram
+  participant TF client
+  participant TVB
+  participant Vault
+
+  TF client->>TVB: 1: LOCK <lock data, Vault API key>
+  TVB->>Vault: 2: LOCK <lock data, Vault API key>
+  Vault->>TVB: 3: LOCK response
+  TVB->>TF client: 4: LOCK response
+
+  TF client->>TVB: 5: POST <state, Vault API key>
+  TVB->>Vault: 6: POST <state, Vault API key>
+  Vault->>TVB: 7: POST response
+  TVB->>TF client: 8: POST response
+
+  TF client->>TVB: 9: UNLOCK <lock data, Vault API key>
+  TVB->>Vault: 10: UNLOCK <lock data, Vault API key>
+  Vault->>TVB: 11: UNLOCK response
+  TVB->>TF client: 12: UNLOCK response
+```
+
+| Use case | Attacker | What | Impact | Exposure | Severity | Countermeasures | Verification |
+|----------|----------|------|--------|----------|----------|-----------------|--------------|
+| UC2:1 | MUA | Lock state without intention to ever unlock it. | Low | Medium | Low | Automatically unlock resources after a set timeout | Test that TVB unlocks resource after timeout expires
+| UC2:1 | MUA, CTA | Exhaust Vault disk space by writing huge lock data | Low | Medium | Low | ensure dependencies are minimal, trustworthy, and up to date | Use automatic dependency scanning in CI
+|||||| Low | Restrict maximum lock data size | Test that TVB rejects writes with too large lock data
+| UC2:5 | CNA | Eavesdrop on traffic to obtain secrets from state | High | Medium | High | Use TLS to protect traffic | Test that TVB rejects plain HTTP requests
+| UC2:5 | MUA | Exhaust Vault disk space by writing huge state | Low | Medium | Low | Restrict maximum state size | Test that TVB rejects writes with unreasonably large state
+| UC2:5 | MUA | Write malicious state to Vault to steal secrets if deployed | High | Medium | High | Scan state for suspicious data | Test that TVB rejects state with suspicious data (e.g. mentions IPs in non-approved ranges)
+|||||| Medium | Log accesses with identity and IP | Test that log is updated with identity and IP for all writes
+| UC2:6 | CTA | Write malicious state to Vault to steal secrets if deployed | High | Low | High | Ensure dependencies are minimal, trustworthy, and up to date | Use automatic dependency scanning in CI
+|||||| Low | Deploy IDS to increase chance of detection | Check deployment for IDS presence
+| UC2:6 | CTA | Exhaust disk space by writing huge state | Low | Low | Medium | Ensure dependencies are minimal, trustworthy, and up to date | Use automatic dependency scanning in CI
+| UC2:6 | CNA | Eavesdrop on traffic to obtain secrets from state | High | Medium | High | Use TLS + proper certificates to protect traffic | Test that TVB refuses to connect to plain HTTP or self-signed Vault
+| UC2:6 | CVA | Leak secrets obtained from state | High | Low | High | Deploy IDS to maximize chance of detecting Vault compromise | Check deployment for IDS presence
