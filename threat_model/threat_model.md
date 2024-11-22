@@ -49,7 +49,7 @@ sequenceDiagram
 |||||| Medium | Deploy IDS to increase chance of detection | Test deployment for IDS presence
 | UC1:3 | CVA, CNA | Return malicious state to user which steals data from deployment if deployed | High | Medium | High | Protect traffic with TLS + proper certificates | Test that TVB refuses to talk to HTTP or self-signed Vault
 | UC1:3 | CNA | Eavesdrop on returned TF state to obtain secrets | High | Medium | High | Protect traffic with TLS | See above
-| UC1:3 | CTA | Leak secrets obtained from Vault | High | Low | High | Ensure dependencies are minimal, trustworthy, and up to date | Use automatic dependency scanning in CI
+| UC1:3 | CTA | Leak secrets obtained from Vault | High | Low | High | Turn off general egress traffic, ensure dependencies are minimal, trustworthy, and up to date | Use automatic dependency scanning in CI
 | UC1:3 | CVA | Return malicious state to user which steals data from deployment if deployed | High | Low | High | Deploy IDS to increase chance of detecting a Vault compromise | Test deployment for IDS presence
 | UC1:4 | CNA | Eavesdrop on TF state as it is sent to user to obtain secrets | High | Medium | Medium | Protect traffic with TLS | Test that TVB deployment rejects plain HTTP
 | UC1:4 | MUA | Leak secrets to unauthorized third parties | High | Medium | High | Log accesses with identity and IP | Test that identity and IP is written to log for each request
