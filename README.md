@@ -6,9 +6,43 @@ Built using [FastAPI](https://fastapi.tiangolo.com/).
 
 ## Installation
 
-Install using [Poetry](https://python-poetry.org/):
+Install with pip (recommended):
+
+```sh
+pip3 install -r requirements.txt
+```
+
+You can also install with [Poetry](https://python-poetry.org/):
+
 ```sh
 poetry install
+```
+
+## Development
+
+Install dependencies with [Poetry](https://python-poetry.org/):
+
+```sh
+poetry install
+```
+
+### 1. Running ruff format & checks
+
+```sh
+poetry run ruff format .
+poetry run ruff check .
+```
+
+### 2. Running the unit tests
+
+```sh
+poetry run pytest
+```
+
+### 3. Running mypy
+
+```sh
+poetry run mypy . --strict
 ```
 
 ## Usage
@@ -16,14 +50,18 @@ poetry install
 ### 1. Running the server
 
 #### Running it directly
-  ```sh
-  poetry run python -m src
-  ```
+
+```sh
+poetry run python -m src
+```
+
 #### Using a poetry shell
-  ```sh
-  poetry shell
-  python -m src
-  ```
+
+```sh
+poetry shell
+python -m src
+```
+
 This will run the backend with Vault defaults.
 Please refer to `python -m src --help` for configuration options.
 
