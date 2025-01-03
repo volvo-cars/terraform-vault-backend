@@ -1,5 +1,5 @@
-ARG PYTHON=3.11
-FROM amd64/python:${PYTHON}-alpine3.19 as builder
+ARG PYTHON=3.13
+FROM python:${PYTHON}-alpine AS builder
 
 RUN pip install --no-cache poetry 
 
@@ -17,7 +17,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --only=main --no-root && \
     rm -rf $POETRY_CACHE_DIR
 
-FROM amd64/python:${PYTHON}-alpine3.19
+FROM python:${PYTHON}-alpine
 
 EXPOSE 8300
 

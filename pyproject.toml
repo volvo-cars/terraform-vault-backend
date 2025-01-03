@@ -1,22 +1,22 @@
 [tool.poetry]
 name = "terraform-vault-backend"
-version = "0.2.0"
+version = "0.2.1"
 description = "A Vault backend for Terraform implemented as an HTTP server."
 authors = ["emanueljg <emanueljohnsongodin@gmail.com>"]
 readme = "README.md"
 packages = [ {include = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.13"
-fastapi = ">=0.111.1,<0.112.0"
+python = ">=3.9,<4"
+fastapi = ">=0.115.6,<0.116.0"
 hvac = ">=2.3.0,<2.4.0"
-uvicorn = ">=0.30.4,<0.31.0"
+uvicorn = ">=0.34.0,<0.35.0"
 
 
 [tool.poetry.group.dev.dependencies]
-ruff = ">=0.5.5,<0.6.0"
-mypy = ">=1.11.1,<1.12.0"
-pytest = ">=8.3.2,<8.4.0"
+ruff = ">=0.8.5,<0.9.0"
+mypy = ">=1.14.1,<1.15.0"
+pytest = ">=8.3.4,<8.4.0"
 
 [tool.ruff]
 line-length = 100
@@ -32,7 +32,6 @@ ignore = [
   "D213",
   "D104",  
   "D107",  
-  "ANN101",
   "ANN401",
   "FIX002",
   "TD004",

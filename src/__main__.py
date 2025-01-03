@@ -8,8 +8,9 @@ import gzip
 import json
 import logging
 import os
+from collections.abc import Collection, Iterable
 from dataclasses import dataclass
-from typing import Any, Callable, Collection, Iterable, TypeVar, cast
+from typing import Annotated, Any, Callable, TypeVar, cast
 
 import hvac  # type: ignore
 import hvac.exceptions  # type: ignore
@@ -25,7 +26,7 @@ from fastapi import (
 )
 from fastapi.datastructures import State
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from typing_extensions import Annotated, Concatenate, ParamSpec
+from typing_extensions import Concatenate, ParamSpec
 
 LockData = Any
 StateData = Any
