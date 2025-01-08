@@ -3,3 +3,4 @@
 __pycache__/
 example/.terraform*
 example/somefile.txt
+.DS_Store
