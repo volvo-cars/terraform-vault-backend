@@ -1,0 +1,24 @@
+name: Black Duck scan
+
+on:
+  schedule:
+    - cron: 45 4 15 * *
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+      - name: Black Duck SCA scan
+        uses: blackduck-inc/black-duck-security-scan@v2.0.0
+
+        env:
+          DETECT_PROJECT_NAME: ${{ github.event.repository.name }}
+
+        with:
+          blackducksca_url: https://apus-blackduck.volvocars.biz
+          blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
+          detect_search_depth: 3
