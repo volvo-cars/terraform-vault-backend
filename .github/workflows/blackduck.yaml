@@ -3,9 +3,6 @@ name: Black Duck scan
 on:
   schedule:
     - cron: 45 4 15 * *
-  push:
-    branches:
-      - blackduck_update
   workflow_dispatch:
 
 jobs:
