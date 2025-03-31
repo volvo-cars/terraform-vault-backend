@@ -13,7 +13,7 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
       - name: Black Duck SCA scan
-        uses: blackduck-inc/black-duck-security-scan@v2.0.0
+        uses: blackduck-inc/black-duck-security-scan@v2.1.1
 
         env:
           DETECT_PROJECT_NAME: ${{ github.event.repository.name }}
@@ -22,3 +22,4 @@ jobs:
           blackducksca_url: https://apus-blackduck.volvocars.biz
           blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
           detect_search_depth: 3
+          detect_args: '--detect.blackduck.signature.scanner.copyright.search=true --detect.blackduck.signature.scanner.snippet.matching=SNIPPET_MATCHING --detect.timeout=3000'
