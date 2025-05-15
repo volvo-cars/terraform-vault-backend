@@ -3,6 +3,9 @@ name: Black Duck scan
 on:
   schedule:
     - cron: 45 4 15 * *
+  push:
+    branches:
+      - detect_accuracy
   workflow_dispatch:
 
 jobs:
@@ -22,4 +25,4 @@ jobs:
           blackducksca_url: https://apus-blackduck.volvocars.biz
           blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
           detect_search_depth: 3
-          detect_args: '--detect.blackduck.signature.scanner.copyright.search=true --detect.blackduck.signature.scanner.snippet.matching=SNIPPET_MATCHING --detect.timeout=3000'
+          detect_args: '--detect.blackduck.signature.scanner.copyright.search=true --detect.blackduck.signature.scanner.snippet.matching=SNIPPET_MATCHING --detect.timeout=3000 --detect.accuracy.required=NONE'
