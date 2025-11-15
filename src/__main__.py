@@ -573,14 +573,14 @@ async def get_lock_info(vault: VaultDep, token: TokenDep) -> LockData:
     return vault.get_lock_data(token=token)
 
 
-@app.post("/v1/lock/{secrets_path:path}")
+@app.lock("/v1/lock/{secrets_path:path}")
 async def acquire_lock(request: Request, vault: VaultDep, token: TokenDep) -> None:
     """Acquire the lock for Terraform state."""
     data = await request.json()
     return vault.acquire_lock(token=token, lock_data=data)
 
 
-@app.delete("/v1/lock/{secrets_path:path}")
+@app.unlock("/v1/lock/{secrets_path:path}")
 async def release_lock(vault: VaultDep, token: TokenDep) -> None:
     """Release the lock for Terraform state."""
     return vault.release_lock(token=token)
