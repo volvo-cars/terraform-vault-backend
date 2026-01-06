@@ -9,40 +9,33 @@ Built using [FastAPI](https://fastapi.tiangolo.com/).
 Install with pip (recommended):
 
 ```sh
-pip3 install -r requirements.txt
-```
-
-You can also install with [Poetry](https://python-poetry.org/):
-
-```sh
-poetry install
+pip3 install --user 'git+ssh://git@github.com/volvo-cars/terraform-vault-backend.git'
 ```
 
 ## Development
 
-Install dependencies with [Poetry](https://python-poetry.org/):
+You can use `nix develop` or install the following tools by hand:
 
-```sh
-poetry install
-```
+* [uv](https://docs.astral.sh/uv/#installation)
+* [terraform](https://developer.hashicorp.com/terraform/install)
 
 ### 1. Running ruff format & checks
 
 ```sh
-poetry run ruff format .
-poetry run ruff check .
+uv run ruff format src
+uv run ruff check src
 ```
 
 ### 2. Running the unit tests
 
 ```sh
-poetry run pytest
+uv run pytest
 ```
 
 ### 3. Running mypy
 
 ```sh
-poetry run mypy . --strict
+uv run mypy src --strict
 ```
 
 ## Usage
@@ -52,18 +45,8 @@ poetry run mypy . --strict
 #### Running it directly
 
 ```sh
-poetry run python -m src
+uv run python3 -m tvb
 ```
-
-#### Using a poetry shell
-
-```sh
-poetry shell
-python -m src
-```
-
-This will run the backend with Vault defaults.
-Please refer to `python -m src --help` for configuration options.
 
 ### 2. Configuring Terraform backend
 

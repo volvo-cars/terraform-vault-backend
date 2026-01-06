@@ -10,7 +10,7 @@ from typing import Any, cast
 
 import pytest
 
-from src.__main__ import (
+from tvb.__main__ import (
     FORMAT_VERSION,
     MissingFormatVersionError,
     UnsupportedFormatVersionError,
@@ -21,7 +21,7 @@ from src.__main__ import (
 
 def chunking_is_inverse(o: Any) -> bool:
     """Test that unpack_state(pack_state(o)) == o for any object o."""
-    return cast(bool, unpack_state(pack_state(o)) == o)
+    return cast("bool", unpack_state(pack_state(o)) == o)
 
 
 def test_none_chunk() -> None:
