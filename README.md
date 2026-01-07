@@ -42,10 +42,22 @@ uv run mypy src --strict
 
 ### 1. Running the server
 
-#### Running it directly
+#### Running without TLS
 
 ```sh
-uv run python3 -m tvb
+python3 -m tvb
+```
+
+#### Running with TLS
+
+```sh
+python3 -m tvb --tls-keyfile key.pem --tls-certfile cert.pem --host 0.0.0.0
+```
+
+For testing, you can generate `key.pem` and a self-signed `cert.pem` with:
+
+```shell
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3650 -nodes -subj "/CN=localhost"
 ```
 
 ### 2. Configuring Terraform backend

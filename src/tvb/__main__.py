@@ -485,6 +485,16 @@ def start() -> None:
         default="-1",
     )
     parser.add_argument(
+        "--tls-keyfile",
+        type=str,
+        help="Private key for enabling TLS. Defaults to None (no TLS).",
+    )
+    parser.add_argument(
+        "--tls-certfile",
+        type=str,
+        help="Certificate file for enabling TLS. Defaults to None (no TLS).",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="count",
@@ -502,7 +512,13 @@ def start() -> None:
     app.state.mount_point = args.mount_point
     app.state.chunk_size = args.chunk_size
 
-    uvicorn.run(app, host=args.host, port=args.port)
+    uvicorn.run(
+        app,
+        host=args.host,
+        port=args.port,
+        ssl_keyfile=args.tls_keyfile,
+        ssl_certfile=args.tls_certfile,
+    )
 
 
 def get_app_state(request: Request) -> State:
