@@ -8,23 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry' # caching poetry dependencies
-      - name: Install dependencies
-        run: poetry install
       - name: Check formatter
-        run: poetry run ruff check . --no-fix
+        run: uv run ruff check src --no-fix 
       - name: Check linter
-        run: poetry run ruff format . --check
+        run: uv run ruff format src --check
       - name: Check types
-        run: poetry run mypy . --strict
+        run: uv run mypy src --strict
       - name: Run unittests
-        run: poetry run python -m pytest
+        run: uv run pytest
