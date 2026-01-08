@@ -1,6 +1,6 @@
 [project]
 name = "terraform-vault-backend"
-version = "0.3.1"
+version = "0.4.0"
 description = "A Vault backend for Terraform implemented as an HTTP server"
 authors = [
   {name = "Emanuel Johnson Godin", email = "emanueljohnsongodin@gmail.com"},
