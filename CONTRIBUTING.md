@@ -1,6 +1,6 @@
 # Getting Involved
 
-This project adheres to the Contributor Covenant [code of conduct](./CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@volvocars.com.
+This project adheres to the Contributor Covenant [code of conduct](./.github/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@volvocars.com.
 
 
 ## Issues
