@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from src.__main__ import Vault
+from tvb.__main__ import Vault
 
 
 def coerced_with(**attrs: Any) -> Vault:

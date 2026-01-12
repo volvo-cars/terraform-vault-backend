@@ -1,5 +1,5 @@
 .pre-commit-config.yaml
-.direnv/
+.venv/
 __pycache__/
 example/.terraform*
 example/somefile.txt

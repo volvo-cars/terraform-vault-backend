@@ -8,9 +8,11 @@ import gzip
 import json
 import logging
 import os
-from collections.abc import Collection, Iterable
 from dataclasses import dataclass
-from typing import Annotated, Any, Callable, TypeVar, cast
+from typing import TYPE_CHECKING, Annotated, Any, Concatenate, TypeVar, cast
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Collection, Iterable
 
 import hvac  # type: ignore
 import hvac.exceptions  # type: ignore
@@ -26,7 +28,7 @@ from fastapi import (
 )
 from fastapi.datastructures import State
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import ParamSpec
 
 LockData = Any
 StateData = Any
@@ -145,7 +147,7 @@ def coercer(f: Callable[Concatenate[X, P], T]) -> Callable[Concatenate[X, P], T]
 
     def wrapper(x: X, /, *args: P.args, **kwargs: P.kwargs) -> T:
         fstatic = f.__get__(object)
-        y = cast(T, fstatic(x, *args, **kwargs))
+        y = cast("T", fstatic(x, *args, **kwargs))
         if y != x:
             logging.debug("'%s': '%s' --> '%s'", fstatic.__name__, x, y)
         else:
@@ -304,7 +306,7 @@ class Vault:
         logging.info("Looking for state chunks...")
         try:
             chunk_keys = cast(
-                Collection[str],
+                "Collection[str]",
                 self._mk_client(token).secrets.kv.v2.list_secrets(
                     path=self.state_path,
                     mount_point=self.mount_point,
@@ -332,7 +334,7 @@ class Vault:
 
         """
         logging.info("Getting state...")
-        chunks: dict[str, str | None] = {
+        chunks: dict[str, str | None] = {  # noqa: C420
             chunk_key: None for chunk_key in self._get_chunk_keys(token)
         }
         for chunk_key in chunks:
@@ -483,6 +485,16 @@ def start() -> None:
         default="-1",
     )
     parser.add_argument(
+        "--tls-keyfile",
+        type=str,
+        help="Private key for enabling TLS. Defaults to None (no TLS).",
+    )
+    parser.add_argument(
+        "--tls-certfile",
+        type=str,
+        help="Certificate file for enabling TLS. Defaults to None (no TLS).",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="count",
@@ -500,12 +512,18 @@ def start() -> None:
     app.state.mount_point = args.mount_point
     app.state.chunk_size = args.chunk_size
 
-    uvicorn.run(app, host=args.host, port=args.port)
+    uvicorn.run(
+        app,
+        host=args.host,
+        port=args.port,
+        ssl_keyfile=args.tls_keyfile,
+        ssl_certfile=args.tls_certfile,
+    )
 
 
 def get_app_state(request: Request) -> State:
     """Depend explicitly on app state only, without access to the request."""
-    return cast(FastAPI, request.app).state
+    return cast("FastAPI", request.app).state
 
 
 AppStateDep = Annotated[State, Depends(get_app_state)]
