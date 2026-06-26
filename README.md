@@ -45,13 +45,13 @@ uv run mypy src --strict
 #### Running without TLS
 
 ```sh
-uv run python3 -m tvb
+python3 -m tvb
 ```
 
 #### Running with TLS
 
 ```sh
-uv run python3 -m tvb --tls-keyfile key.pem --tls-certfile cert.pem --host 0.0.0.0
+python3 -m tvb --tls-keyfile key.pem --tls-certfile cert.pem --host 0.0.0.0
 ```
 
 For testing, you can generate `key.pem` and a self-signed `cert.pem` with:
