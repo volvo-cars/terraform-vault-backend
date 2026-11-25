@@ -13,7 +13,7 @@ dependencies = [
     "hvac==2.4.0",
     "uvicorn==0.49.0",
     "starlette==1.3.1", # https://github.com/volvo-cars/terraform-vault-backend/pull/25
-    "urllib3==2.7.0", # https://github.com/volvo-cars/terraform-vault-backend/pull/25
+    "urllib3==2.8.0", # https://github.com/volvo-cars/terraform-vault-backend/pull/25
 ]
 
 [dependency-groups]
