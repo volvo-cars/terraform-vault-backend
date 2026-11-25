@@ -10,7 +10,9 @@ for comp in sbom.get("components", []):
     name = comp.get("name")
     version = comp.get("version")
     licenses = [
-        lic.get("license", {}).get("id") or lic.get("license", {}).get("name")
+        lic.get("expression")
+        or lic.get("license", {}).get("id")
+        or lic.get("license", {}).get("name")
         for lic in comp.get("licenses", [])
     ]
     lic_str = ", ".join(filter(None, licenses)) or "Unknown License"
