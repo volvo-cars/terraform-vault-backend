@@ -14,7 +14,7 @@ pip3 install --user 'git+ssh://git@github.com/volvo-cars/terraform-vault-backend
 
 ## Development
 
-You can use `nix develop` or install the following tools by hand:
+We use uv for development.
 
 * [uv](https://docs.astral.sh/uv/#installation)
 * [terraform](https://developer.hashicorp.com/terraform/install)
@@ -45,13 +45,13 @@ uv run ty check src
 #### Running without TLS
 
 ```sh
-python3 -m tvb
+uv run python3 -m tvb
 ```
 
 #### Running with TLS
 
 ```sh
-python3 -m tvb --tls-keyfile key.pem --tls-certfile cert.pem --host 0.0.0.0
+uv run python3 -m tvb --tls-keyfile key.pem --tls-certfile cert.pem --host 0.0.0.0
 ```
 
 For testing, you can generate `key.pem` and a self-signed `cert.pem` with:
