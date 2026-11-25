@@ -96,3 +96,12 @@ $ terraform apply
 ```
 
 More info on Vault authentication can be found at [Vault's official documentation](https://developer.hashicorp.com/vault/tutorials/getting-started/getting-started-authentication).
+
+## Compliance
+
+Remove `dev` deps and regenerate the `NOTICE` file:
+
+```
+uv sync --no-dev
+uv tool run --from cyclonedx-bom cyclonedx-py environment .venv | python3 compliance/notice.py > NOTICE
+```
