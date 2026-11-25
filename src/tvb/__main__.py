@@ -334,8 +334,9 @@ class Vault:
 
         """
         logging.info("Getting state...")
+        # Vault lists keys in string order ("10" before "2"), so sort them numerically.
         chunks: dict[str, str | None] = {  # noqa: C420
-            chunk_key: None for chunk_key in self._get_chunk_keys(token)
+            chunk_key: None for chunk_key in sorted(self._get_chunk_keys(token), key=int)
         }
         for chunk_key in chunks:
             logging.info("Getting state chunk %s...", chunk_key)
