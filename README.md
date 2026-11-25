@@ -32,10 +32,10 @@ uv run ruff check src
 uv run pytest
 ```
 
-### 3. Running mypy
+### 3. Running ty
 
 ```sh
-uv run mypy src --strict
+uv run ty check src
 ```
 
 ## Usage
