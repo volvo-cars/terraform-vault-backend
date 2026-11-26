@@ -14,7 +14,7 @@ pip3 install --user 'git+ssh://git@github.com/volvo-cars/terraform-vault-backend
 
 ## Development
 
-You can use `nix develop` or install the following tools by hand:
+We use uv for development.
 
 * [uv](https://docs.astral.sh/uv/#installation)
 * [terraform](https://developer.hashicorp.com/terraform/install)
@@ -32,10 +32,10 @@ uv run ruff check src
 uv run pytest
 ```
 
-### 3. Running mypy
+### 3. Running ty
 
 ```sh
-uv run mypy src --strict
+uv run ty check src
 ```
 
 ## Usage
@@ -45,13 +45,13 @@ uv run mypy src --strict
 #### Running without TLS
 
 ```sh
-python3 -m tvb
+uv run python3 -m tvb
 ```
 
 #### Running with TLS
 
 ```sh
-python3 -m tvb --tls-keyfile key.pem --tls-certfile cert.pem --host 0.0.0.0
+uv run python3 -m tvb --tls-keyfile key.pem --tls-certfile cert.pem --host 0.0.0.0
 ```
 
 For testing, you can generate `key.pem` and a self-signed `cert.pem` with:
@@ -96,3 +96,12 @@ $ terraform apply
 ```
 
 More info on Vault authentication can be found at [Vault's official documentation](https://developer.hashicorp.com/vault/tutorials/getting-started/getting-started-authentication).
+
+## Compliance
+
+Remove `dev` deps and regenerate the `NOTICE` file:
+
+```
+uv sync --no-dev
+uv tool run --from cyclonedx-bom cyclonedx-py environment .venv | python3 compliance/notice.py > NOTICE
+```

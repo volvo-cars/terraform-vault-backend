@@ -1,14 +1,13 @@
 name: "CI"
 on:
   pull_request:
-  push:
 jobs:
   check:
     name: Code check & unittests
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v5
       - name: Install the latest version of uv and set the python version
@@ -16,10 +15,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Check formatter
-        run: uv run ruff check src --no-fix 
+        run: uv run ruff check src --no-fix
       - name: Check linter
         run: uv run ruff format src --check
       - name: Check types
-        run: uv run mypy src --strict
+        run: uv run ty check src
       - name: Run unittests
         run: uv run pytest

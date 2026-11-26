@@ -7,7 +7,7 @@ extend-select = [ "ALL" ]
 ignore = [
   "COM812", "ISC001", "D203", "D213", "D104", "D107", "ANN401", "FIX002",
   "TD004", "TD002", "TD003", "FBT001", "ERA001", "PGH003", "RET504", "D301",
-  "FAST003", "LOG015",
+  "FAST003", "LOG015", "CPY001",
 ]
 
 [lint.per-file-ignores]

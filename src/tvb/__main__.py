@@ -14,9 +14,9 @@ from typing import TYPE_CHECKING, Annotated, Any, Concatenate, TypeVar, cast
 if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable
 
-import hvac  # type: ignore
-import hvac.exceptions  # type: ignore
-import requests.exceptions  # type: ignore
+import hvac
+import hvac.exceptions
+import requests.exceptions
 import uvicorn
 from fastapi import (
     Depends,
@@ -146,7 +146,8 @@ def coercer(f: Callable[Concatenate[X, P], T]) -> Callable[Concatenate[X, P], T]
     """Attr coercion wrapper with logging."""
 
     def wrapper(x: X, /, *args: P.args, **kwargs: P.kwargs) -> T:
-        fstatic = f.__get__(object)
+        # `f` is a staticmethod object at decoration time; unwrap it via the descriptor protocol.
+        fstatic = cast("Any", f).__get__(object)
         y = cast("T", fstatic(x, *args, **kwargs))
         if y != x:
             logging.debug("'%s': '%s' --> '%s'", fstatic.__name__, x, y)
